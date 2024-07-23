@@ -1,0 +1,49 @@
+.version-info: &version-info
+  GLOO_VERSION: 1.16.0
+
+  
+QA Gloo Upgrade:
+  stage: Cluster Utility
+  extends: .Gloo Upgrade
+  variables:
+    CLUSTER: mdm-qa
+    ENVIRONMENT: QA 
+    <<: *version-info
+  environment:
+    name: QA
+    action: prepare
+
+DEV Gloo Upgrade:
+  stage: Cluster Utility
+  extends: .Gloo Upgrade
+  variables:
+    CLUSTER: mdmtest
+    ENVIRONMENT: DEV
+    <<: *version-info
+  environment:
+    name: DEV
+    action: prepare
+
+.Staging-EU Gloo Upgrade:
+  stage: Cluster Utility
+  extends: .Gloo Upgrade
+  variables:
+    CLUSTER: mdm
+    ENVIRONMENT: Staging-EU
+    <<: *version-info
+  environment:
+    name: Staging-EU
+    action: prepare 
+
+.Staging-US Gloo Upgrade:
+  stage: Cluster Utility
+  extends: .Gloo Upgrade
+  variables:
+    CLUSTER: mdm
+    ENVIRONMENT: Staging-US
+    <<: *version-info
+  environment:
+    name: Staging-US
+    action: prepare 
+
+

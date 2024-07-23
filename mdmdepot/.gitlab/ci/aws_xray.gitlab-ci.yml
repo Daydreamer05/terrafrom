@@ -1,0 +1,84 @@
+.create-iam-serviceaccount:
+  - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+  - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+  - export AWS_REGION=$REGION
+  - eksctl create iamserviceaccount --name xray-daemon --cluster $CLUSTER --namespace default --attach-policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess   --approve  --override-existing-serviceaccounts
+
+
+
+
+QA XRAY Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+  script:
+    - !reference [.installing_eksctl]
+    - !reference [.create-iam-serviceaccount]
+    - kubectl apply -f utility/aws_xray
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual
+      changes:
+        - utility/aws_xray/*
+  variables:
+    CLUSTER: mdm-qa
+    REGION: eu-central-1
+  environment:
+    name: QA
+    action: prepare
+  tags:
+    - docker   
+
+
+
+
+DEV XRAY Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.installing_eksctl]
+    - !reference [.create-iam-serviceaccount]
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f utility/aws_xray
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual
+      changes:
+        - utility/aws_xray/*
+  variables:
+    CLUSTER: mdmtest
+    REGION: us-east-2
+  environment:
+    name: DEV
+    action: prepare
+  tags:
+    - docker   
+
+
+EU XRAY Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.installing_eksctl]
+    - !reference [.create-iam-serviceaccount]
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f utility/aws_xray
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual
+      changes:
+        - utility/aws_xray/*
+  variables:
+    CLUSTER: mdm-staging-us
+    REGION: eu-central-1
+  environment:
+    name: Staging-EU
+    action: prepare
+  tags:
+    - docker   

@@ -1,0 +1,20 @@
+stages:
+  - Cluster Utility
+  - Updation
+  - Deprecation Check
+  - Scenario Test Setup (Dev)
+  - Scenario Testing (Dev)
+  - Restore Deployments
+
+
+include:
+  - project: hex/ci-templates
+    file:
+      - ci_templates/kubernetes/cluster_role.gitlab-ci.yml
+      - ci_templates/kubernetes/gloo_upgrade.gitlab-ci.yml
+      - ci_templates/kubernetes/cluster_upgrade.gitlab-ci.yml
+      - ci_templates/deployment/k8.gitlab-ci.yml
+      - ci_templates/deployment/database-replication/database-replication.gitlab-ci.yml
+  - local: .gitlab/ci/*.gitlab-ci.yml
+  - local: utils.gitlab-ci.yml
+  - local: scheduled/dev_behave_test.gitlab-ci.yml

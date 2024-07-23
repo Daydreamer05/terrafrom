@@ -1,0 +1,86 @@
+stages:
+  - Cluster Utility
+  - Deprecation Check
+  - Upgrade Linkerd
+  - qa-validate
+  - qa-lint
+  - qa-plan
+  - qa-apply
+  - prod-us-validate
+  - prod-us-plan
+  - prod-us-apply
+  - qa-destroy
+  - prod-us-destroy
+  - Variables Deletion
+
+include:
+  - project: hex/ci-templates
+    file:
+      - ci_templates/kubernetes/cluster_role.gitlab-ci.yml
+      - ci_templates/kubernetes/cluster_upgrade.gitlab-ci.yml
+      - ci_templates/utils.gitlab-ci.yml
+      - ci_templates/deployment/k8.gitlab-ci.yml
+  - local: utility/cluster_access/cluster-access.gitlab-ci.yml
+  - local: utility/*.gitlab-ci.yml
+  - local: utils.gitlab-ci.yml
+  - local: .gitlab/ci/QA/*.gitlab-ci.yml
+         
+
+.Upgrade Linkerd:
+    stage: Upgrade Linkerd
+    image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+    variables:
+      CLUSTER:
+      LINKERD_VERSION:   
+    script:
+      - echo Upgrading Linkerd server version to  $LINKERD_VERSION 
+      - kubectl config set-cluster $CLUSTER --server="${CLUSTER_SERVER}"
+      - kubectl config set clusters.$CLUSTER.certificate-authority-data ${CERTIFICATE_AUTHORITY_DATA}
+      - kubectl config set-credentials gitlab --token="${LINKERD_USER_TOKEN}"
+      - kubectl config set-context deploy --cluster=$CLUSTER --user=gitlab
+      - kubectl config use-context deploy
+      - wget https://github.com/linkerd/linkerd2/releases/download/$LINKERD_VERSION/linkerd2-cli-$LINKERD_VERSION-linux-amd64
+      - cp linkerd2-cli-$LINKERD_VERSION-linux-amd64 /usr/local/bin/linkerd
+      - chmod +x /usr/local/bin/linkerd
+      - linkerd version
+      - linkerd check
+      - linkerd upgrade --set proxyInit.runAsRoot=true | kubectl apply --prune -l linkerd.io/control-plane-ns=linkerd -f -
+      - linkerd upgrade --set proxyInit.runAsRoot=true | kubectl apply --prune -l linkerd.io/control-plane-ns=linkerd --prune-whitelist=rbac.authorization.k8s.io/v1/clusterrole --prune-whitelist=rbac.authorization.k8s.io/v1/clusterrolebinding --prune-whitelist=apiregistration.k8s.io/v1/apiservice -f -
+      - linkerd check
+      - kubectl -n default rollout restart deploy 
+      - kubectl -n default rollout restart StatefulSet
+      - kubectl -n gloo-system get deploy ingress-proxy -oyaml | linkerd inject --manual - | kubectl apply -f -
+      - linkerd check --proxy
+    rules:
+      - if: $CI_COMMIT_REF_NAME == 'master'
+        when: manual
+    tags:
+      - docker
+
+Dev:
+    extends: .Upgrade Linkerd
+    variables:
+      CLUSTER: dlptest
+      LINKERD_VERSION: stable-2.12.3
+    environment:
+      name: Dev
+      action: prepare 
+
+QA:
+    extends: .Upgrade Linkerd
+    variables:
+      CLUSTER: dlp-qa 
+      LINKERD_VERSION: stable-2.12.3
+    environment:
+      name: QA
+      action: prepare
+
+Prod US:
+    extends: .Upgrade Linkerd
+    variables:
+      CLUSTER: dlp-prod-us
+      LINKERD_VERSION: stable-2.12.3
+    environment:
+      name: PROD-US
+      action: prepare 
+

@@ -1,0 +1,60 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: dlptest
+  region: us-east-2
+  version: "1.25"
+vpc:
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+  publicAccessCIDRs: ["ip-whitelist"]
+managedNodeGroups:
+  - name: dlp
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 70
+    labels: {app: dlp}
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: azure
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 70
+    labels: {app: azure}
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: workflow
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 70
+    labels: {app: workflow}
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: cog-dlp
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 70
+    labels: {app: workflow}
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: cog-msgraph
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 70
+    labels: {app: workflow}
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: cog-workflow
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 70
+    labels: {app: workflow}
+    instanceType: t3.medium
+    privateNetworking: True

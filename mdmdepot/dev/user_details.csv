@@ -1,0 +1,3 @@
+user_arn,user_name,groups
+arn:aws:iam::461746121762:user/mahendran.e@mitsogo.com,mahendran.e@mitsogo.com,devops
+arn:aws:iam::461746121762:user/eks_update_admin,eks_update_admin,system:masters

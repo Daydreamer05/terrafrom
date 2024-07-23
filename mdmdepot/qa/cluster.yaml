@@ -1,0 +1,114 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: mdm-qa
+  region: eu-central-1
+  version: "1.25" 
+vpc:
+  nat:
+    gateway: HighlyAvailable
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+  publicAccessCIDRs: ["ip-whitelist"]
+  
+managedNodeGroups:
+  - name: checkin-android-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: checkin-ios-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    labels: {service: cog}
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: checkin-windows-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: content-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: directory-cog-ng
+    minSize: 4
+    maxSize: 5
+    desiredCapacity: 4
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: directory-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: endpoint-cog-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: endpoint-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: pap-cog-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: pap-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: scep-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: userportal-ng
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: report-ng
+    minSize: 4
+    maxSize: 5
+    desiredCapacity: 4
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True
+  - name: utility
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 20
+    instanceType: t3.medium
+    privateNetworking: True

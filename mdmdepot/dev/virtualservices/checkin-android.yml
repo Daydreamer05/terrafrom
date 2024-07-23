@@ -1,0 +1,37 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-checkin-android
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: mitsogo-tls
+      namespace: default
+  virtualHost:
+    domains:
+    - 'checkin-android-dev.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      routeAction:
+        single:
+          upstream:
+            name: default-checkin-android-4001
+            namespace: gloo-system
+            
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-checkin-android
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+    - 'checkin-android-dev.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

@@ -1,0 +1,36 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-cogflower
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: mits-tls
+      namespace: default
+  virtualHost:
+    domains:
+    - 'cogflower-dlp-qa.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      routeAction:
+        single:
+          upstream:
+            name: default-cog-flower-dlp-5555
+            namespace: gloo-system
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-cogflower
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+      - 'cogflower-dlp-qa.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

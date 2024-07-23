@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dlp-canary
+  name: dlp-canary
+spec:
+  clusterIP: None
+  ports:
+  - name: dlp-canary
+    port: 4000
+  selector:
+    app: dlp
+    build: canary

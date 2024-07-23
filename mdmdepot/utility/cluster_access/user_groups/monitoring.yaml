@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: 
+  name: cluster-access-role-monitoring
+rules:
+  - apiGroups: ["","apps","autoscaling","extensions","batch","policy","rbac.authorization.k8s.io","networking.k8s.io"]
+    resources: ["pods","services","configmaps","replicasets","nodes","daemonsets","statefulsets","ingresses","namespaces","pods/exec","pods/log"]
+    verbs: ["get","list","watch"]
+    
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-access-binding-monitoring
+subjects:
+  - kind: Group
+    name: monitoring
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-access-role-monitoring
+  apiGroup: rbac.authorization.k8s.io

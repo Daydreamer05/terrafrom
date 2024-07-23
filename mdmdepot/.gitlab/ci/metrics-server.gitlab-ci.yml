@@ -1,0 +1,30 @@
+.Metrics Server Deployment:
+  extends: .k8 deployment
+  variables:
+    DEPLOY_PATH: "utility/metricsserver.yml"
+  rules:
+    - if: $CI_COMMIT_REF == "master"
+      changes:
+        - $DEPLOY_PATH
+      when: manual
+
+DEV Metrics Server:
+    stage: Cluster Utility
+    extends: .Metrics Server Deployment
+    variables:
+      CLUSTER: mdmtest
+      ENVIRONMENT: DEV
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare 
+
+
+QA Metrics Server:
+    stage: Cluster Utility
+    extends: .Metrics Server Deployment
+    variables:
+      CLUSTER: mdm-qa
+      ENVIRONMENT: QA 
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare

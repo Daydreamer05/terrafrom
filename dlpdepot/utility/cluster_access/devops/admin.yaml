@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: 
+  name: cluster-access-role-admin
+rules:
+  - apiGroups: ["","apps","autoscaling","extensions","batch","policy","rbac.authorization.k8s.io","networking.k8s.io","gateway.solo.io","gloo.solo.io","discovery.k8s.io","apiregistration.k8s.io"]
+    resources: ["pods","configmaps","deployments","jobs","replicasets","replicationcontrollers","serviceaccounts","nodes","daemonsets","virtualservices","services","clusterroles","clusterrolebindings","rolebindings","roles","statefulsets","ingresses","namespaces","pods/exec","pods/log","secrets","horizontalpodautoscalers","gateways","endpointslices","endpoints","apiservices"]
+    verbs: ["get","list","watch","create","update","patch","delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-access-binding-admin
+subjects:
+  - kind: Group
+    name: admin
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-access-role-admin
+  apiGroup: rbac.authorization.k8s.io

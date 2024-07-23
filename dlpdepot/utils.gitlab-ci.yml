@@ -1,0 +1,121 @@
+.installing_eksctl:
+    - curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+    - mv /tmp/eksctl /usr/local/bin
+    - eksctl version
+
+.qa-rules: 
+  - if: $CI_COMMIT_REF_NAME == "master"
+
+.qa-manual-rules: 
+  - if: $CI_COMMIT_REF_NAME == "master"
+    when: manual
+
+.prod-us-rules: 
+  - if: $CI_COMMIT_REF_NAME == "master"
+
+.prod-us-manual-rules: 
+  - if: $CI_COMMIT_REF_NAME == "master"
+    when: manual
+
+.before_script: &before_script
+  - apk add curl && apk add --upgrade curl
+  - export AWS_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
+  - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  - export TF_VAR_GITLAB_TOKEN=${GITLAB_TOKEN}
+  - cd $directory
+  - terraform init -backend-config "../${stage}/terraform/backend.hcl"
+  - terraform workspace list
+  - terraform workspace new "${stage}_${microservice}" || true
+  - terraform workspace select "${stage}_${microservice}"
+
+.validate:
+  variables:
+    directory: ""
+    microservice: ""
+    stage: ""
+  before_script:
+    - *before_script
+  script:
+    - terraform validate
+    # - terraform refresh --var-file "../${stage}/terraform/${microservice}.tfvars"
+  tags:
+    - docker
+
+.lint:
+  image: bash:4.0
+  variables:
+    directory: ""
+    microservice: ""
+    stage: ""
+  before_script:
+    - apk add curl && apk add --upgrade curl
+    - curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+    - cd $directory
+  script:
+    - tflint --init
+    - tflint --var-file "../${stage}/terraform/${microservice}.tfvars"
+  tags:
+    - docker
+
+.plan:
+  variables:
+    directory: ""
+    microservice: ""
+    stage: ""
+  before_script:
+    - *before_script
+  script:
+    - terraform plan --var-file "../${stage}/terraform/${microservice}.tfvars"
+  tags:
+    - docker
+
+.apply:
+  variables:
+    directory: ""
+    microservice: ""
+    stage: ""
+  before_script:
+    - *before_script
+  script:
+    - terraform apply --var-file "../${stage}/terraform/${microservice}.tfvars" --auto-approve
+  after_script:
+    - apk add python3 py3-pip && python3 -m pip install awscli --break-system-packages
+    - source .gitlab/ci/${stage}/backend.hcl 
+    - aws s3api get-object --bucket $bucket --region $region --key env:/${stage}_${microservice}/terraform.tfstate ${microservice}-terraform.tfstate
+  artifacts:
+    paths:
+    - ${microservice}-terraform.tfstate
+    when: on_success
+    expire_in: never
+  tags:
+    - docker
+
+.destroy:
+  variables:
+    directory: ""
+    microservice: ""
+    stage: ""
+  dependencies: []
+  before_script:
+    - *before_script
+  script:
+    - terraform destroy --var-file "../${stage}/terraform/${microservice}.tfvars" --auto-approve
+  tags:
+    - docker
+
+.Variables Deletion:
+  image: bash:4.0
+  variables:
+      PROJECT_ID: ""
+      stage: ""
+  dependencies: []
+  before_script:
+    - apk add curl && apk add --upgrade curl  
+    - variables=("RDS_PROXY_HOST_PRIMARY" "RDS_PROXY_PORT_PRIMARY"  "RDS_PROXY_USERNAME_PRIMARY" "RDS_PROXY_PASSWORD_PRIMARY" "ELASTICACHE_HOST" "ELASTICACHE_PORT"   "BROKER_URI" "RESULT_BACKEND_URI")
+    - for str in ${variables[@]}; do
+    - |
+        curl --request DELETE --globoff --header "PRIVATE-TOKEN: $GITLAB_TOKEN"  "https://codehub.mitsogo.com/api/v4/projects/${PROJECT_ID}/variables/${str}?filter[environment_scope]=${stage}"
+    - echo $str
+    - done   
+  tags:
+   - docker

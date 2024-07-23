@@ -1,0 +1,70 @@
+# Routetable for status apis using common domain
+apiVersion: gateway.solo.io/v1
+kind: RouteTable
+metadata:
+  labels:
+    domain: api-dev.mitsogo.com
+  name: api-status-routes
+  namespace: gloo-system
+spec:
+  routes:
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /uem/endpoint/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-mdm-endpoint-4000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /uem/pap/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-pap-4000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /uem/content/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-content-4000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /uem/directory/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-directory-4000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /uem/report/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-reports-4000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status

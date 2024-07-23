@@ -1,0 +1,17 @@
+mdm dev cluster access update:
+  extends: [.update cluster endpoint access]
+  variables:
+    CLUSTER: "mdmtest"
+    ENVIRONMENT: dev
+  environment:
+    name: DEV
+    action: prepare
+
+mdm qa cluster access update:
+  extends: [.update cluster endpoint access]
+  variables:
+    CLUSTER: "mdm-qa"
+    ENVIRONMENT: qa
+  environment:
+    name: QA
+    action: prepare

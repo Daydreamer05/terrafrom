@@ -1,0 +1,76 @@
+image:
+  name: hashicorp/terraform:1.8
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+qa_cog_validate:
+  stage: qa-validate
+  extends: .validate
+  variables:
+    directory: cog_redis
+    microservice: cog_redis
+    stage: QA
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_cog_lint:
+  stage: qa-lint
+  extends: .lint
+  variables:
+    directory: cog_redis
+    microservice: cog_redis
+    stage: QA
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_cog_plan:
+  stage: qa-plan
+  extends: .plan
+  variables:
+    directory: cog_redis
+    microservice: cog_redis
+    stage: QA
+  dependencies:
+    - qa_cog_validate
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_cog_apply:
+  stage: qa-apply
+  extends: .apply
+  variables:
+    directory: cog_redis
+    microservice: cog_redis
+    stage: QA
+  dependencies:
+    - qa_cog_plan
+  rules:
+    - !reference [.qa-manual-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_cog_destroy:
+  stage: qa-destroy
+  extends: .destroy
+  variables:
+    directory: cog_redis
+    microservice: cog_redis
+    stage: QA
+  dependencies:
+    - qa_cog_apply
+  rules:
+    - !reference [.qa-manual-rules]
+  environment:
+    name: QA
+    deployment_tier: testing

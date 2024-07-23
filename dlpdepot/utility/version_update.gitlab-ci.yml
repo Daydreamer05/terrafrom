@@ -1,0 +1,68 @@
+QA EKS Upgrade:
+  stage: Cluster Utility
+  extends: [.kubernetes version]
+  variables:
+    CLUSTER: "dlp-qa"
+    ENVIRONMENT: qa
+    REGION: us-east-2
+  environment:
+    name: QA
+    action: prepare
+
+Dev EKS Upgrade:
+  stage: Cluster Utility
+  extends: [.kubernetes version]
+  variables:
+    CLUSTER: "dlptest"
+    ENVIRONMENT: dev
+    REGION: us-east-2
+  environment:
+    name: Dev
+    action: prepare
+
+Prod EKS Upgrade:
+  stage: Cluster Utility
+  extends: [.kubernetes version]
+  variables:
+    CLUSTER: "dlp-prod-us"
+    ENVIRONMENT: prod
+  environment:
+    name: Prod-US
+    action: prepare
+
+
+
+
+DLP Dev Deprecation check:
+  extends: [.kubernetes_deprecated_api_check]
+  needs: ["Dev EKS Upgrade"]
+  variables:
+    CLUSTER: "dlptest"
+    ENVIRONMENT: dev
+    REGION: us-east-2
+  environment:
+    name: Dev
+    action: prepare
+
+
+DLP QA Deprecation check:
+  extends: [.kubernetes_deprecated_api_check]
+  needs: ["QA EKS Upgrade"]
+  variables:
+    CLUSTER: "dlp-qa"
+    ENVIRONMENT: qa
+    REGION: us-east-2
+  environment:
+    name: QA
+    action: prepare
+
+DLP Prod Deprecation check:
+  extends: [.kubernetes_deprecated_api_check]
+  needs: ["Prod EKS Upgrade"]
+  variables:
+    CLUSTER: "dlp-prod-us"
+    ENVIRONMENT: qa
+    REGION: us-east-2
+  environment:
+    name: Prod-US
+    action: prepare

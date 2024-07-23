@@ -1,0 +1,8 @@
+user_arn,user_name,groups
+arn:aws:iam::461746121762:user/shreya.shetty@mitsogo.com,shreya.shetty@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/megha.geo@mitsogo.com,megha.geo@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/gayathri.ar@mitsogo.com,gayathri.ar@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/challa.krishna@mitsogo.com,challa.krishna@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/aman.thankachan@mitsogo.com,aman.thankachan@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/prudhvi.kalva@mitsogo.com,prudhvi.kalva@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/maria.francis@mitsogo.com,maria.francis@mitsogo.com,monitoring

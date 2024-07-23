@@ -1,0 +1,43 @@
+apiVersion: v1
+data:
+  prometheus.rules: "groups:\n- name: DLP_PROD alerts\n  rules:\n  - alert: HostHighCpuLoad\n    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))
+    * 100) > 50\n    for: 1m\n    labels:\n      channel: mdm_loadtesting\n    annotations:\n
+    \     description: 'CPU load is > 50% and VALUE is {{ $value | printf \"%.2f\"
+    }}%'\n\n  - alert: HostOutOfMemory\n    expr: node_memory_MemAvailable_bytes /
+    node_memory_MemTotal_bytes * 100 < 10\n    for: 1m\n    labels:\n      channel:
+    mdm_loadtesting\n    annotations:\n      description: 'Node memory is filling up (< 10%
+    left) and VALUE is {{ $value | printf \"%.2f\" }}% '\n\n\n  - alert: HostOutOfDiskSpace\n
+    \   expr: (node_filesystem_avail_bytes{mountpoint=\"/\"}* 100) / node_filesystem_size_bytes{mountpoint=\"/\"}
+    < 10\n    for: 1m\n    labels:\n      channel: mdm_loadtesting\n    annotations:\n      description:
+    'Disk is almost full (< 10% left) and  VALUE is {{ $value | printf \"%.2f\" }}%'\n"
+  prometheus.yml: |-
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    rule_files:
+      - /etc/prometheus/prometheus.rules
+    alerting:
+      alertmanagers:
+      - scheme: http
+        static_configs:
+        - targets:
+          - "prometheus-beta.mitsogo.com:9093"
+
+    scrape_configs:
+      - job_name: 'DLP_PROD'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_endpoints_name]
+            regex: 'node-exporter'
+            action: keep
+          - action: replace
+            source_labels: [ __meta_kubernetes_endpoint_node_name]
+            target_label: instance
+kind: ConfigMap
+metadata:
+  labels:
+    name: prometheus-server-conf
+  name: prometheus-server-conf
+  namespace: monitoring
+

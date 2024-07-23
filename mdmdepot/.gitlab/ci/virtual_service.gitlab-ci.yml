@@ -1,0 +1,86 @@
+QA VS Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f qa/virtualservices
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - qa/virtualservices/*
+      when: manual
+  variables:
+    CLUSTER: mdm-qa
+  environment:
+    name: QA
+    action: prepare
+  tags:
+    - docker    
+
+QA Service Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f qa/services
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - qa/services/*
+      when: manual
+  variables:
+    CLUSTER: mdm-qa
+  environment:
+    name: QA
+    action: prepare
+  tags:
+    - docker   
+
+DEV VS Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f dev/virtualservices
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - dev/virtualservices/*
+      when: manual
+  variables:
+    CLUSTER: mdmtest
+  environment:
+    name: DEV
+    action: prepare
+  tags:
+    - docker
+
+DEV Service Deployment:
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  stage: Cluster Utility
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f dev/services
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - dev/services/*
+      when: manual
+  variables:
+    CLUSTER: mdmtest
+  environment:
+    name: DEV
+    action: prepare
+  tags:
+    - docker
+
+ 
+ 

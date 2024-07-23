@@ -1,0 +1,44 @@
+Dev EKS Upgrade:
+  extends: [.kubernetes version]
+  stage: Cluster Utility
+  variables:
+    CLUSTER: "mdmtest"
+    ENVIRONMENT: dev
+    REGION: us-east-2
+  environment:
+    name: DEV
+    action: prepare
+
+QA EKS Upgrade:
+  extends: [.kubernetes version]
+  stage: Cluster Utility
+  variables:
+    CLUSTER: "mdm-qa"
+    ENVIRONMENT: qa
+    REGION: eu-central-1
+  environment:
+    name: QA
+    action: prepare
+
+
+Mdm Dev Deprecation check:
+  extends: [.kubernetes_deprecated_api_check]
+  needs: ["Dev EKS Upgrade"]
+  variables:
+    CLUSTER: "mdmtest"
+    ENVIRONMENT: dev
+    REGION: us-east-2
+  environment:
+    name: DEV
+    action: prepare
+
+Mdm QA Deprecation check:
+  extends: [.kubernetes_deprecated_api_check]
+  needs: ["QA EKS Upgrade"]
+  variables:
+    CLUSTER: "mdm-qa"
+    ENVIRONMENT: qa
+    REGION: eu-central-1
+  environment:
+    name: QA
+    action: prepare

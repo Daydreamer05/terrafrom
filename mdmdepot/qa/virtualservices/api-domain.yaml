@@ -1,0 +1,37 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-api-domain
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: mitsogo-tls
+      namespace: default
+  virtualHost:
+    domains:
+    - 'api-qa.mitsogo.com'
+    routes:
+    - matchers:
+       - prefix: '/'
+      delegateAction:
+        selector:
+          labels:
+            domain: api-qa.mitsogo.com
+          namespaces:
+          - gloo-system
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-api-domain
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+      - 'api-qa.mitsogo.com'
+    routes:
+    - matchers:
+        - prefix: '/'
+      redirectAction:
+        httpsRedirect: true

@@ -1,0 +1,11 @@
+user_arn,user_name,groups
+arn:aws:iam::461746121762:user/megha.geo@mitsogo.com,megha.geo@mitsogo.com,devops
+arn:aws:iam::461746121762:user/shreya.shetty@mitsogo.com,shreya.shetty@mitsogo.com,devops
+arn:aws:iam::461746121762:user/megha.geo@mitsogo.com,megha.geo@mitsogo.com,devops
+arn:aws:iam::461746121762:user/gayathri.ar@mitsogo.com,gayathri.ar@mitsogo.com,devops
+arn:aws:iam::461746121762:user/challa.krishna@mitsogo.com,challa.krishna@mitsogo.com,devops
+arn:aws:iam::461746121762:user/aman.thankachan@mitsogo.com,aman.thankachan@mitsogo.com,devops
+arn:aws:iam::461746121762:user/prudhvi.kalva@mitsogo.com,prudhvi.kalva@mitsogo.com,devops
+arn:aws:iam::461746121762:user/mahendran.e@mitsogo.com,mahendran.e@mitsogo.com,monitoring
+arn:aws:iam::461746121762:user/eks_update_admin,eks_update_admin,system:masters
+arn:aws:iam::461746121762:user/kandra.pravallika@mitsogo.com,kandra.pravallika@mitsogo.com,devops

@@ -1,0 +1,34 @@
+.Cluster Autoscaler Deployment:
+  extends: .k8 deployment
+  variables:
+    DEPLOY_PATH: "utility/clusterautoscaler.yml"
+    CA_VERSION: "v1.26.2"
+  before_script:
+    - sed -i "s/VERSION/${CA_VERSION}/g" ${DEPLOY_PATH}
+  rules:
+    - if: $CI_COMMIT_REF == "master"
+      changes:
+        - $DEPLOY_PATH
+      when: manual
+
+DEV Cluster Autoscaler:
+    stage: Cluster Utility
+    extends: .Cluster Autoscaler Deployment
+    variables:
+      CLUSTER: mdmtest
+      ENVIRONMENT: DEV
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare 
+
+
+QA Cluster Autoscaler:
+    stage: Cluster Utility
+    extends: .Cluster Autoscaler Deployment
+    variables:
+      CLUSTER: mdm-qa
+      ENVIRONMENT: QA 
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare
+

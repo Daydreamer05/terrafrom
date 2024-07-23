@@ -1,0 +1,62 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-api-domain
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: mitsogo-tls
+      namespace: default
+  virtualHost:
+    domains:
+    - 'api-dev.mitsogo.com'
+    routes:
+    - matchers:
+      - prefix: /dlp/_status
+      routeAction:
+        single:
+          upstream:
+            name: default-dlp-canary-4000
+            namespace: gloo-system
+      options:
+        prefixRewrite: /_status
+    - matchers:
+      - prefix: /azure/_status
+      routeAction:
+        single:
+          upstream:
+            name: default-azure-canary-4000
+            namespace: gloo-system
+      options:
+        prefixRewrite: /_status
+    - matchers:
+      - prefix: /dlp
+      routeAction:
+        single:
+          upstream:
+            name: default-dlp-canary-4000
+            namespace: gloo-system
+    - matchers:
+      - prefix: /azure
+      routeAction:
+        single:
+          upstream:
+            name: default-azure-canary-4000
+            namespace: gloo-system    
+                  
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-api-domain
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+      - 'api-dev.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

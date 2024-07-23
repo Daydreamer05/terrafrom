@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkin-ios
+spec:
+  ports:
+    - port: 4001
+  clusterIP: None
+  selector:
+    service: checkin-ios
+

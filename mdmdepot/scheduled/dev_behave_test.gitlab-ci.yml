@@ -1,0 +1,202 @@
+.dev_behave_test_rules: &dev_behave_test_rules
+ - if: $SCHEDULE_TYPE =="dev_behave_test"
+
+
+
+.utility-pods:
+    - PAP_UTILITY_POD=$(kubectl get pods | grep pap-utility | head -1 | awk '{print $1}')
+    - MDM_ENDPOINT_UTILITY_POD=$(kubectl get pods | grep mdm-endpoint-utility |  awk '{print $1}')
+    - DIRECTORY_UTILITY_POD=$(kubectl get pods | grep directory-utility | head -1 | awk '{print $1}')
+    - CONTENT_UTILITY_POD=$(kubectl get pods | grep content-utility | head -1 | awk '{print $1}')
+    - ENROLLMENT_UTILITY_POD=$(kubectl get pods | grep enrollment-utility | head -1 | awk '{print $1}')
+
+.deployment_files:
+    - mkdir deployments
+    - curl -s --header "PRIVATE-TOKEN:${GITLAB_TOKEN}" "https://${CI_SERVER_HOST}/api/v4/projects/844/repository/files/.deployment%2Fserver%2Fdeployment.yaml/raw?ref=master" >  deployments/pap_behave_deployment.yaml 
+    - curl -s --header "PRIVATE-TOKEN:${GITLAB_TOKEN}" "https://${CI_SERVER_HOST}/api/v4/projects/847/repository/files/.deployment%2Fmdm_endpoint%2Fdev.yaml/raw?ref=master" >  deployments/endpoint_behave_deployment.yaml 
+    - curl -s --header "PRIVATE-TOKEN:${GITLAB_TOKEN}" "https://${CI_SERVER_HOST}/api/v4/projects/846/repository/files/.deployment%2Fserver%2Fdeployment.yaml/raw?ref=master" >  deployments/directory_behave_deployment.yaml 
+
+
+Scenario Test Setup:
+  stage: Scenario Test Setup (Dev)
+  image: codehub.mitsogo.com:4567/hex/packages:kubernetes_pypi
+  variables:
+    CLUSTER: mdmtest
+  script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+    - !reference [.utility-pods]
+    - | 
+      PAP_IMAGE=$(kubectl get  sts pap -o yaml | grep image: | awk -F": " '{print $2}' | head -1 )
+      MDM_ENDPOINT_IMAGE=$(kubectl get  sts mdm-endpoint -o yaml | grep image: | awk -F": " '{print $2}' | head -1 )
+      DIRECTORY_IMAGE=$(kubectl get  sts directory -o yaml | grep image: | awk -F": " '{print $2}' | head -1)
+    - !reference [.deployment_files]
+   
+    - sed "s;&&; \&\& sed -i 's/MODE=production/MODE=testing/' .env &&  sed -i 's,ACCOUNTS_URL=https://accounts-dev.mitsogo.com,ACCOUNTS_URL=http://a696ec0cbef4d4d629e560fcf6007c7c-126739623.us-east-2.elb.amazonaws.com:8000,' .env && ;" deployments/pap_behave_deployment.yaml 
+    - sed "s;&&; \&\& sed -i 's/MODE=production/MODE=testing/' .env &&  sed -i 's,ACCOUNTS_URL=https://accounts-dev.mitsogo.com,ACCOUNTS_URL=http://a696ec0cbef4d4d629e560fcf6007c7c-126739623.us-east-2.elb.amazonaws.com:8000,' .env && ;" deployments/endpoint_behave_deployment.yaml
+    - sed "s;&&; \&\& sed -i 's/MODE=production/MODE=testing/' .env &&  sed -i 's,ACCOUNTS_URL=https://accounts-dev.mitsogo.com,ACCOUNTS_URL=http://a696ec0cbef4d4d629e560fcf6007c7c-126739623.us-east-2.elb.amazonaws.com:8000,' .env && ;" deployments/directory_behave_deployment.yaml  
+
+    - sed -i "s~<REGISTRY_URL>:<TAG>~$PAP_IMAGE~g" deployments/pap_behave_deployment.yaml 
+    - sed -i "s~<REGISTRY_URL>:<VERSION>~$MDM_ENDPOINT_IMAGE~g" deployments/endpoint_behave_deployment.yaml 
+    - sed -i "s~<REGISTRY_URL>:<TAG>~$DIRECTORY_IMAGE~g" deployments/directory_behave_deployment.yaml 
+    - kubectl apply -f deployments/
+    - kubectl exec -it $PAP_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+    - kubectl exec -it $MDM_ENDPOINT_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+    - kubectl exec -it $DIRECTORY_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+    - kubectl exec -it $CONTENT_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+    - kubectl exec -it $ENROLLMENT_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+  environment:
+    name: DEV
+    action: prepare
+  rules:
+    - *dev_behave_test_rules
+  tags:
+    - docker     
+
+
+
+.Behave Test:
+  image: codehub.mitsogo.com:4567/hex/packages:kubernetes_pypi
+  variables:
+    FF_NETWORK_PER_BUILD: "true"
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    DOCKER_DRIVER: overlay
+    FF_USE_FASTZIP: "true"
+    CACHE_COMPRESSION_LEVEL: "fast"
+    MODE: testing
+    POSTGRES_DB: pap_models-test
+    POSTGRES_USER: hexnode
+    POSTGRES_PASSWORD: ""
+    POSTGRES_HOST_AUTH_METHOD: trust
+    Host: redis
+    CLUSTER: mdmtest
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - export RDS_PROXY_HOST_PRIMARY=postgres
+    - export RDS_PROXY_USERNAME_PRIMARY=hexnode
+    - export RDS_PROXY_PASSWORD_PRIMARY=""
+    - export RDS_PROXY_PORT_PRIMARY=5432
+    - export DB_NAME=pap_models
+    - export ELASTICACHE_HOST=redis
+    - export ELASTICACHE_PORT=6379
+    - export APP_SERVER_ID=1
+    - export MODE=testing
+    - export BUCKET_NAME=mdm-ci-test
+    - export SENTRY_ASGI_DSN=""
+    - export ACCOUNTS_URL=http://a696ec0cbef4d4d629e560fcf6007c7c-126739623.us-east-2.elb.amazonaws.com:8000
+    - export COG_URL=""
+    - export DATABASE_URI="postgresql://$POSTGRES_USER:@$RDS_PROXY_HOST_PRIMARY:5432/cog"
+    - export KEY_TOKEN="1qaz2wsx"
+    - export INTROSPECTION_TOKEN=""
+    - export S3_HOST=https://mdm-ci-test.s3.amazonaws.com
+    - export S3_PORT=443
+    - export S3_REGION_NAME=us-east-1
+    - export SERVICE_ID=0
+    - export BROKER_URI="redis://redis:6379/0"
+    - export RESULT_BACKEND_URI="redis://redis:6379/1"
+    - export ENROLLMENT_URL="https://enroll.vmanaged.me"
+    - export MICROSERVICE_ID=0
+    - export ALLOWED_ORIGIN=https://browser.mitsogo.com
+    - export GLOBAL_DOMAIN=""
+    - export SCHEMA_URI="https://api.mitsogo.com/schemas/mdm/v2/"  # dummy value
+    - export AFW_PROJECT_ID=""
+    - export PUB_SUB=""
+    - export BROWSER_URL=""
+    - export HOST_URL="https://api-dev.mitsogo.com/uem"
+
+    - export APP_HOST_MAP='{"directory":"https://api-dev.mitsogo.com/uem","mdm_endpoint":"https://api-dev.mitsogo.com/uem","pap":"https://api-dev.mitsogo.com/uem"}'
+    - export NAMESPACE=uem
+    - export EXTERNAL_BASE_URL="http://api-dev.mitsogo.com/uem"
+    - pip install virtualenv --index-url https://$PYPI_USERNAME:$GITLAB_PYPI_TOKEN@${CI_SERVER_HOST}/api/v4/projects/164/packages/pypi/simple
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install slate-cli slate --index-url https://$PYPI_USERNAME:$GITLAB_PYPI_TOKEN@${CI_SERVER_HOST}/api/v4/projects/164/packages/pypi/simple
+    - export PYTHON_VERSION_TOML=3.10
+    - export ENABLE_TEST_CLIENT=False
+  tags:
+    - docker  
+
+
+
+Pap Test:
+  stage: Scenario Testing (Dev)
+  image: codehub.mitsogo.com:4567/hex/packages:kubernetes_pypi
+  extends: .Behave Test
+  variables:
+    CLUSTER: mdmtest
+    REGION: us-east-2
+  script:
+    - !reference [.kubectl-cluster-config]
+    - pip install pap --index-url https://$PYPI_USERNAME:$GITLAB_PYPI_TOKEN@${CI_SERVER_HOST}/api/v4/projects/164/packages/pypi/simple
+    - pip install mdm-bdd==1.4.3  --index-url https://prudhvi.kalva:glpat-qZZ55w7McDcAsqDdK3uP@${CI_SERVER_HOST}/api/v4/projects/629/packages/pypi/simple
+    - curl -s --header "PRIVATE-TOKEN:${GITLAB_TOKEN}" "https://${CI_SERVER_HOST}/api/v4/projects/17/repository/files/replication.yml/raw?ref=ci_deployment_utility" > replication.yml
+    - export STAGE=test
+    - !reference [.Database Setup, before_script]
+    - export APP=pap
+    # ##admin tab 1/2
+    - sleep 250
+    - slate test mdm venv/lib/python${PYTHON_VERSION_TOML}/site-packages/bdd -v --stop -t "@server and (@api.technician or @api.config or @api.roles_and_permission or @api.scheme_and_scope) and not @release and not @skip_server" -i '/technician.feature\|/config_api.feature\|/role.feature\|/scheme.feature' --junit --junit_directory behave_result
+    # ##admin tab 2/2
+    - !reference [.Database Setup, before_script]
+    - sleep 250
+    - slate test mdm venv/lib/python${PYTHON_VERSION_TOML}/site-packages/bdd -v --stop -t "@server and (@api.settings or @api.geofence) and not @release and not @skip_server" -i '/enrolment_customization_settings.feature\|/portal_customization_settings.feature' --junit --junit_directory behave_result
+    - curl -s --header "PRIVATE-TOKEN:${GITLAB_TOKEN}" "https://${CI_SERVER_HOST}/api/v4/projects/202/repository/files/ci_templates%2Ftests%2Fbehave_xml_parse.py/raw?ref=master" > behave_xml_parse.py
+    - pip install junitparser  --index-url https://$PYPI_USERNAME:$GITLAB_PYPI_TOKEN@${CI_SERVER_HOST}/api/v4/projects/164/packages/pypi/simple
+    - junitparser merge --glob "behave_result/*.xml"  "behave.xml"
+    - msg=$(python behave_xml_parse.py pap)
+    - MSG=$( echo $msg | sed 's/"/\"/g' | sed "s/'/\'/g" )
+    - |
+       JSON="{\"title\": \" Pap Behave Test Results\", \"text\": \"${MSG}\" }"
+    - |
+       curl -H "Content-Type: application/json" -d "${JSON}" "${NOTIFICATION_WEBHOOK}"
+  rules:
+    - *dev_behave_test_rules
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - behave_result/*.xml
+    reports:
+      junit:
+        - behave_result/*.xml
+  environment:
+    name: DEV
+    action: prepare
+ 
+
+
+
+
+
+
+Services Deploy:
+  image: codehub.mitsogo.com:4567/hex/packages:kubernetes_pypi
+  stage: Restore Deployments
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+    - !reference [.kubectl-cluster-config]
+    - !reference [.utility-pods]
+  script:   
+    - | 
+      PAP_IMAGE=$(kubectl get  sts pap -o yaml | grep image: | awk -F": " '{print $2}' | head -1 )
+      MDM_ENDPOINT_IMAGE=$(kubectl get  sts mdm-endpoint -o yaml | grep image: | awk -F": " '{print $2}' | head -1 )
+      DIRECTORY_IMAGE=$(kubectl get  sts directory -o yaml | grep image: | awk -F": " '{print $2}' | head -1)
+    - !reference [.deployment_files]
+    - sed -i "s~<REGISTRY_URL>:<TAG>~$PAP_IMAGE~g" deployments/pap_behave_deployment.yaml
+    - sed -i "s~<REGISTRY_URL>:<VERSION>~$MDM_ENDPOINT_IMAGE~g" deployments/endpoint_behave_deployment.yaml 
+    - sed -i "s~<REGISTRY_URL>:<TAG>~DIRECTORY_IMAGE~g" deployments/directory_behave_deployment.yaml  
+    - kubectl apply -f deployments/
+    - kubectl exec -it $PAP_UTILITY_POD -- sh -c "sed -i 's/MODE=testing/MODE=production/' .env"
+    - kubectl exec -it $MDM_ENDPOINT_UTILITY_POD -- sh -c "sed -i 's/MODE=testing/MODE=production/' .env"
+    - kubectl exec -it $DIRECTORY_UTILITY_POD -- sh -c "sed -i 's/MODE=testing/MODE=production/' .env"
+    - kubectl exec -it $CONTENT_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+    - kubectl exec -it $ENROLLMENT_UTILITY_POD -- sh -c "sed -i 's/MODE=production/MODE=testing/' .env"
+  rules:
+    - *dev_behave_test_rules
+  variables:
+    CLUSTER: mdmtest
+    REGION: us-east-2
+  environment:
+    name: DEV
+    action: prepare
+  tags:
+    - docker  

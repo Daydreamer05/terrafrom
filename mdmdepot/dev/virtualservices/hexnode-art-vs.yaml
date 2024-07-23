@@ -1,0 +1,39 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-hexnode-art
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: hexnode-art-tls
+      namespace: default
+    sniDomains:
+      - '*.hexnode.art'
+  virtualHost:
+    domains:
+    - '*.hexnode.art'
+    routes:
+    - matchers:
+       - prefix: '/'
+      delegateAction:
+        selector:
+          labels:
+            domain: 'hexnode.art'
+          namespaces:
+            - gloo-system           
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-hexnode-art
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+    - '*.hexnode.art'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

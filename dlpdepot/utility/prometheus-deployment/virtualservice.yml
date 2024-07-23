@@ -1,0 +1,36 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-prometheus
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: hexnode-tls
+      namespace: default
+  virtualHost:
+    domains:
+       - "prometheus-dlp-prod.hexnode.com"
+    routes:
+    - matchers:
+      - regex: /.*
+      routeAction:
+        single:
+          upstream:
+            name: monitoring-prometheus-service-8080
+            namespace: gloo-system
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-prometheus
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+      - "prometheus-dlp-prod.hexnode.com"
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

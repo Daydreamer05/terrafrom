@@ -1,0 +1,122 @@
+.qa-cluster-variables: &qa-cluster-variables
+  CLUSTER: mdm-qa
+  FILE_PATH: qa
+  ENVIRONMENT: QA
+
+.dev-cluster-variables: &dev-cluster-variables
+  CLUSTER: mdmtest
+  FILE_PATH: dev
+  ENVIRONMENT: DEV
+
+.prod-us-cluster-variables: &prod-us-cluster-variables
+  CLUSTER: mdm
+  FILE_PATH: prod
+  ENVIRONMENT: Staging-US
+
+.prod-eu-cluster-variables: &prod-eu-cluster-variables
+  CLUSTER: mdm
+  FILE_PATH: prod
+  ENVIRONMENT: Staging-EU
+
+.staging-cluster-variables: &staging-cluster-variables
+  CLUSTER: mdm-staging-us
+  FILE_PATH: staging
+  ENVIRONMENT: Staging-EU
+
+
+Staging Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *staging-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+
+Staging Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *staging-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+
+QA Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *qa-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+  
+QA Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *qa-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+DEV Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *dev-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+  
+DEV Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *dev-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+
+Staging_US Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *prod-us-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+Staging_US Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *prod-us-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+
+Staging_EU Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *prod-eu-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+
+Staging_EU Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *prod-eu-cluster-variables
+  environment:
+    name: $ENVIRONMENT
+    action: prepare
+
+

@@ -1,0 +1,19 @@
+dlp dev cluster access update:
+  extends: [.update cluster endpoint access]
+  stage: Cluster Utility
+  variables:
+    CLUSTER: "dlptest"
+    ENVIRONMENT: dev
+  environment:
+    name: Dev
+    action: prepare
+
+dlp qa cluster access update:
+  extends: [.update cluster endpoint access]
+  stage: Cluster Utility
+  variables:
+    CLUSTER: "dlp-qa"
+    ENVIRONMENT: qa
+  environment:
+    name: QA
+    action: prepare

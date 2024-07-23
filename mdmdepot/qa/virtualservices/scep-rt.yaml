@@ -1,0 +1,16 @@
+apiVersion: gateway.solo.io/v1
+kind: RouteTable
+metadata:
+  name: scep-routes
+  namespace: gloo-system
+  labels:
+    domain: vmanaged.me
+spec:
+  routes:
+  - matchers:
+    - regex: /scep/.*
+    routeAction:
+      single:
+        upstream:
+          name: default-scep-8000
+          namespace: gloo-system

@@ -1,0 +1,53 @@
+.qa-cluster-variables: &qa-cluster-variables
+  CLUSTER: dlp-qa
+  FILE_PATH: qa
+  ENVIRONMENT: QA
+    
+.dev-cluster-variables: &dev-cluster-variables
+  CLUSTER: dlptest
+  FILE_PATH: dev
+  ENVIRONMENT: Dev
+
+.prod-cluster-variables: &prod-cluster-variables
+  CLUSTER: dlp-prod-us
+  FILE_PATH: prod
+  ENVIRONMENT: Prod-US
+
+
+QA Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *qa-cluster-variables
+  
+   
+DEV Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *dev-cluster-variables
+   
+
+PROD_US Cluster Role:
+  stage: Cluster Utility
+  extends: .Cluster Access
+  variables:
+    <<: *prod-cluster-variables
+
+QA Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *qa-cluster-variables
+
+DEV Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *dev-cluster-variables
+
+PROD_US Cluster Access:
+  stage: Cluster Utility
+  extends: .Add Users
+  variables:
+    <<: *prod-cluster-variables

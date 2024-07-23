@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: housekeeper
+  namespace: default
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: housekeeper-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: housekeeper-role
+subjects:
+  - kind: ServiceAccount
+    name: housekeeper
+    namespace: default
+  - kind: User
+    name: gitlab
+    apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: housekeeper-role
+  namespace: default
+rules:
+  - apiGroups:
+    - ""
+    - apps
+    - autoscaling
+    - batch
+    - extensions
+    - policy
+    - rbac.authorization.k8s.io
+    - apiextensions.k8s.io
+    - admissionregistration.k8s.io
+    - discovery.k8s.io
+    - networking.k8s.io
+    - apiregistration.k8s.io
+    - gateway.solo.io
+    - gloo.solo.io
+    - enterprise.gloo.solo.io
+    - graphql.gloo.solo.io
+    - ratelimit.solo.io
+    - storage.k8s.io
+    - policy
+    - coordination.k8s.io
+    resources:
+      - pods
+      - gateways
+      - componentstatuses
+      - configmaps
+      - daemonsets
+      - deployments
+      - events
+      - endpoints
+      - horizontalpodautoscalers
+      - ingress
+      - jobs
+      - limitranges
+      - namespaces
+      - nodes
+      - pods
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - replicasets
+      - replicationcontrollers
+      - serviceaccounts
+      - services
+      - customresourcedefinitions
+      - clusterroles
+      - clusterrolebindings
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+      - secrets
+      - endpointslices
+      - cronjobs
+      - rolebindings
+      - roles
+      - ingresses
+      - statefulsets
+      - apiservices
+      - settings
+      - pods/exec
+      - pods/log
+      - proxies
+      - upstreamgroups
+      - graphqlapis
+      - graphqlapis/status
+      - ratelimitconfigs
+      - ratelimitconfigs/status
+      - authconfigs
+      - upstreams
+      - httpgateways
+      - routeoptions
+      - routetables
+      - virtualhostoptions
+      - virtualservices
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "escalate"]
+  - apiGroups: ["gloo.solo.io", "gateway.solo.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "update", "patch","create","delete"]
+---
+
+# apiVersion: v1 
+# kind: Secret 
+# type: kubernetes.io/service-account-token 
+# metadata: 
+#   name: housekeeper-secret
+#   annotations: 
+#     kubernetes.io/service-account.name: housekeeper

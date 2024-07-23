@@ -1,0 +1,37 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-cog-directory
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: mitsogo-tls
+      namespace: default
+  virtualHost:
+    domains:
+    - 'cog-directory-dev.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      routeAction:
+        single:
+          upstream:
+            name: default-cog-webserver-directory-8000
+            namespace: gloo-system
+
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-cog-directory
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+      - 'cog-directory-dev.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

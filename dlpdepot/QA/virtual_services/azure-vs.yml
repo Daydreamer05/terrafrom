@@ -1,0 +1,36 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-azure
+  namespace: private-gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: mits-tls
+      namespace: default
+  virtualHost:
+    domains:
+    - 'azure-qa.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      routeAction:
+        single:
+          upstream:
+            name: default-azure-canary-4000
+            namespace: private-gloo-system    
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-azure
+  namespace: private-gloo-system
+spec:
+  virtualHost:
+    domains:
+      - 'azure-qa.mitsogo.com'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

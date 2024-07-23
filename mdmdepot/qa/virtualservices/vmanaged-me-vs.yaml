@@ -1,0 +1,39 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-vmanaged-me
+  namespace: gloo-system
+spec:
+  sslConfig:
+    secretRef:
+      name: vmanaged-tls
+      namespace: default
+    sniDomains:
+      - '*.vmanaged.me'
+  virtualHost:
+    domains:
+    - '*.vmanaged.me'
+    routes:
+    - matchers:
+       - prefix: '/'
+      delegateAction:
+        selector:
+          labels:
+            domain: 'vmanaged.me'
+          namespaces:
+            - gloo-system           
+---
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: default-http-vmanaged-me
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+    - '*.vmanaged.me'
+    routes:
+    - matchers:
+      - regex: /.*
+      redirectAction:
+        httpsRedirect: true

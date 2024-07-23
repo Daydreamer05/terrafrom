@@ -1,0 +1,36 @@
+.Cluster Autoscaler Deployment:
+  extends: .k8 deployment
+  variables:
+    DEPLOY_PATH: "utility/clusterautoscaler.yml"
+    CA_VERSION: "v1.26.2"
+  before_script:
+    - sed -i "s/VERSION/${CA_VERSION}/g" ${DEPLOY_PATH}
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN
+
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - $DEPLOY_PATH
+      when: manual
+
+DEV Cluster Autoscaler:
+    stage: Cluster Utility
+    extends: .Cluster Autoscaler Deployment
+    variables:
+      CLUSTER: dlptest
+      ENVIRONMENT: Dev
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare 
+
+
+QA Cluster Autoscaler:
+    stage: Cluster Utility
+    extends: .Cluster Autoscaler Deployment
+    variables:
+      CLUSTER: dlp-qa
+      ENVIRONMENT: QA 
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare
+

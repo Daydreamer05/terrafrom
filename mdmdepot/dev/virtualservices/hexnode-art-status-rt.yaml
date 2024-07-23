@@ -1,0 +1,34 @@
+# Routetable for enroll,scep status apis
+apiVersion: gateway.solo.io/v1
+kind: RouteTable
+metadata:
+  labels:
+    domain: hexnode.art
+  name: hexnode-art-status-routes
+  namespace: gloo-system
+spec:
+  routes:
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /userportal/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-enrollment-4000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status
+  - matchers:
+    - methods:
+      - OPTIONS
+      - GET
+      prefix: /scep/_status
+    routeAction:
+      single:
+        upstream:
+          name: default-scep-8000
+          namespace: gloo-system
+    options:
+        prefixRewrite: /_status

@@ -1,0 +1,90 @@
+image:
+  name: hashicorp/terraform:1.8
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+qa_dlp_validate:
+  stage: qa-validate
+  extends: .validate
+  variables:
+    directory: data_layer
+    microservice: dlp
+    stage: QA
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_dlp_lint:
+  stage: qa-lint
+  extends: .lint
+  variables:
+    directory: data_layer
+    microservice: dlp
+    stage: QA
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_dlp_plan:
+  stage: qa-plan
+  extends: .plan
+  variables:
+    directory: data_layer
+    microservice: dlp
+    stage: QA
+  dependencies:
+    - qa_dlp_validate
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_dlp_apply:
+  stage: qa-apply
+  extends: .apply
+  variables:
+    directory: data_layer
+    microservice: dlp
+    stage: QA
+  dependencies:
+    - qa_dlp_plan
+  rules:
+    - !reference [.qa-manual-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_dlp_destroy:
+  stage: qa-destroy
+  extends: .destroy
+  variables:
+    directory: data_layer
+    microservice: dlp
+    stage: QA
+  dependencies:
+    - qa_dlp_apply
+  rules:
+    - !reference [.qa-manual-rules]
+  environment:
+    name: QA
+    deployment_tier: testing
+
+qa_dlp_var_deletion:
+  stage: Variables Deletion
+  variables:
+    PROJECT_ID: 592
+    stage: QA
+  extends: .Variables Deletion
+  script:
+    - echo variables deleted
+  rules:
+    - !reference [.qa-rules]
+  environment:
+    name: QA
+    deployment_tier: testing

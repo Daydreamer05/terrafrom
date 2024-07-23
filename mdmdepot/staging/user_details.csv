@@ -1,0 +1,3 @@
+user_arn,user_name,groups
+arn:aws:iam::461746121762:user/prudhvi.kalva@mitsogo.com,prudhvi.kalva@mitsogo.com,devops
+arn:aws:iam::461746121762:user/megha.geo@mitsogo.com,megha.geo@mitsogo.com,devops

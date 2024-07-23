@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cog-webserver-directory
+spec:
+  type: ClusterIP
+  selector:
+    service: cog
+    app: cog-webserver-directory
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

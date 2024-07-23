@@ -1,0 +1,36 @@
+.Pod Disruption Budget :
+  image: ${CI_SERVER_HOST}:4567/hex/packages:kubernetes
+  before_script:
+    - !reference [.kubectl-cluster-config]
+  script:
+    - kubectl apply -f utility/pod_disruption_budget
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master"
+      changes:
+        - utility/pod_disruption_budget/*
+      when: manual
+  tags:
+    - docker
+
+
+DEV Pod Disruption Budget:
+    stage: Cluster Utility
+    extends: .Pod Disruption Budget
+    variables:
+      CLUSTER: mdmtest
+      ENVIRONMENT: DEV
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare 
+
+
+
+QA Pod Disruption Budget:
+    stage: Cluster Utility
+    extends: .Pod Disruption Budget
+    variables:
+      CLUSTER: mdm-qa
+      ENVIRONMENT: QA 
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare

@@ -1,0 +1,32 @@
+.Metrics Server Deployment:
+  extends: .k8 deployment
+  variables:
+    DEPLOY_PATH: "utility/metricsserver.yml"
+  before_script:
+    - USER_TOKEN=$HOUSEKEEPER_ACCESS_TOKEN  
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - $DEPLOY_PATH
+      when: manual
+
+DEV Metrics Server:
+    stage: Cluster Utility
+    extends: .Metrics Server Deployment
+    variables:
+      CLUSTER: dlptest
+      ENVIRONMENT: Dev
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare 
+
+
+QA Metrics Server:
+    stage: Cluster Utility
+    extends: .Metrics Server Deployment
+    variables:
+      CLUSTER: dlp-qa
+      ENVIRONMENT: QA 
+    environment:
+      name: ${ENVIRONMENT}
+      action: prepare
